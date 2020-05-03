@@ -1,5 +1,7 @@
 # Bluetooth classic serial port client for Node.js
 
+[![Build status](https://ci.appveyor.com/api/projects/status/5pj8g6rh9ml9v52a?svg=true)](https://ci.appveyor.com/project/lrahobisoa/bluetooth-classic-serialport-client)
+
 ## Prerequisites on Linux
 
 * Needs Bluetooth development packages to build

@@ -19,9 +19,7 @@ install:
   - npm --version
   - node -e "console.log(process.arch);"
   - SET PATH=C:\Python27-x64;%PATH%
-  - npm install node-gyp bindings
-  - npm update
-  - npm run install-debug
+  - npm install
 
 # Post-install test scripts.
 # test_script:
@@ -35,5 +33,5 @@ build_script:
   - npm run install
 
 artifacts:
-  - path: '**\*.node'
+  - path: 'build\Release\*.node'
     name: BluetoothClassicSerialPortClient
