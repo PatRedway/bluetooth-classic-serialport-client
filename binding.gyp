@@ -3,7 +3,7 @@
   [
     {
      # Needed declarations for the target
-     'target_name': 'BluetoothSerialPort',
+     'target_name': 'BluetoothClassicSerialPortClient',
      'conditions': [
         [ 'OS=="linux"', {
           'sources': [ 'src/linux/BluetoothSerialPort.cc', 'src/linux/DeviceScan.cc', 'src/linux/SerialPortBinding.cc' ],

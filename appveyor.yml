@@ -30,5 +30,9 @@ test_script:
   - node_modules\.bin\node-gyp build
   - node examples\scan.js
 
-# Don't actually build.
-build: off
+build_script:
+  - npm run install
+
+artifacts:
+  - path: '**\*.node'
+    name: BluetoothClassicSerialPortClient
