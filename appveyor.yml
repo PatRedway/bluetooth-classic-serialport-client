@@ -19,16 +19,16 @@ install:
   - npm --version
   - node -e "console.log(process.arch);"
   - SET PATH=C:\Python27-x64;%PATH%
-  - npm install node-gyp
+  - npm install node-gyp bindings
   - npm update
   - npm run install-debug
 
 # Post-install test scripts.
-test_script:
-  # run tests
-  - node_modules\.bin\node-gyp configure
-  - node_modules\.bin\node-gyp build
-  - node examples\scan.js
+# test_script:
+#   # run tests
+#   - node_modules\.bin\node-gyp configure
+#   - node_modules\.bin\node-gyp build
+#   - node examples\scan.js
 
 build_script:
   - npm install
