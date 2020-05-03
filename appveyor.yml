@@ -31,6 +31,7 @@ test_script:
   - node examples\scan.js
 
 build_script:
+  - npm install
   - npm run install
 
 artifacts:
