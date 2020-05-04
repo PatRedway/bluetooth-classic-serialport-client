@@ -2,8 +2,7 @@
   'targets':
   [
     {
-     # Needed declarations for the target
-     'target_name': 'BluetoothClassicSerialPortClient',
+     "target_name": "<(module_name)",
      'conditions': [
         [ 'OS=="linux"', {
           'sources': [ 'src/linux/BluetoothSerialPort.cc', 'src/linux/DeviceScan.cc', 'src/linux/SerialPortBinding.cc' ],
@@ -25,7 +24,18 @@
           'libraries': [ '-lkernel32.lib', '-luser32.lib', '-lWs2_32.lib' ]
         }],
       ]
+    },
+    {
+      "target_name": "action_after_build",
+      "type": "none",
+      "dependencies": [ "<(module_name)" ],
+      "copies": [
+        {
+          "files": [ "<(PRODUCT_DIR)/<(module_name).node" ],
+          "destination": "<(module_path)"
+        }
+      ]
     }
-  ] # end targets
+  ]
 }
 

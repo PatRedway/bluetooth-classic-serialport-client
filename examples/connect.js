@@ -1,4 +1,4 @@
-const BluetoothSerialPort = require('../lib/index')
+const BluetoothSerialPort = require('../index')
 const serial = new BluetoothSerialPort()
 const PassThrough = require('stream').PassThrough
 const ReadLineParser = require('./lib/ReadLineParser')
