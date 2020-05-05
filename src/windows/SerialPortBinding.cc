@@ -397,7 +397,7 @@ NAN_METHOD(SerialPortBinding::Close) {
     Local<Value> argv[argc];
 
     SerialPortBinding *rfcomm = Nan::ObjectWrap::Unwrap<SerialPortBinding>(info.This());
-    int iResult = (rfcomm->m_socket, SD_SEND);
+    int iResult = (rfcomm->m_socket, SD_BOTH);
 
     if (iResult == SOCKET_ERROR) {
         closesocket(rfcomm->m_socket);
