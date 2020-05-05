@@ -86,14 +86,14 @@ class BluetoothSerialPort extends EventEmitter {
     return new Promise((resolve, reject) => {
       if (this.connection) {
         this.connection.close(this.btAddress, (err) => {
-          if (err) {
-            reject(new Error(err))
-            return
-          }
           this.connection = undefined
           this.emit('closed')
           this.removeListener('data', this.dataListener)
-          resolve()
+          if (err) {
+            reject(new Error(err))
+          } else {
+            resolve()
+          }
         })
       } else {
         reject(new Error('Connection already closed'))

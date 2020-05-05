@@ -1,37 +1,26 @@
+skip_non_tags: true
+version: build-#{build}
+
 environment:
-  # Node-pre-gyp key to publish to S3 amazonaws 
   node_pre_gyp_accessKeyId:
     secure: WAHfHKrvPh/JvZHzXnjz0DRxQLOHnfZndqPr4j47spE=
   node_pre_gyp_secretAccessKey:
     secure: /BrCRWOuBZYBa8g5KQWm5H+yi54Tyzp/a+JJQ3yUGU11YxWaj60tLWkCjmNiO4ef
-  # Visual Studio Version
   MSVS_VERSION: 2017
-  # Test against these versions of Node.js and io.js
   matrix:
-    # node.js
     - nodejs_version: "12"
 
 platform:
   - x64
 
-# Install scripts. (runs after repo cloning)
 install:
-  # Get the latest stable version of Node.js or io.js
   - ps: Install-Product node $env:nodejs_version $env:Platform
-  # install modules
   - node --version
   - npm -g install npm@latest
   - npm --version
   - node -e "console.log(process.arch);"
   - SET PATH=C:\Python27-x64;%PATH%
   - npm install
-
-# Post-install test scripts.
-# test_script:
-#   # run tests
-#   - node_modules\.bin\node-gyp configure
-#   - node_modules\.bin\node-gyp build
-#   - node examples\scan.js
 
 build_script:
   - npm install

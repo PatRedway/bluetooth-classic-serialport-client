@@ -1,9 +1,12 @@
+/** 
+ *  This example aim to connect to a specific hardware device called SmartVOX.
+ *  You can easily adapt this example to connect with your own device.
+*/
+
 const BluetoothSerialPort = require('../index')
 const serial = new BluetoothSerialPort()
 const PassThrough = require('stream').PassThrough
 const ReadLineParser = require('./lib/ReadLineParser')
-
-let smartvox
 
 let stream = new PassThrough()
 let parser = new ReadLineParser('\r')
@@ -11,6 +14,8 @@ stream.pipe(parser)
 parser.on('data', (data) => {
   console.log(data.trim())
 })
+
+let smartvox
 
 serial.scan()
 .then((devices) => {
@@ -23,7 +28,7 @@ serial.scan()
   })
 
   if (!smartvox) {
-    console.log('[connect.js] No smartvox found')
+    console.log('[connect.js] No smartVOX found')
     return
   }
 
