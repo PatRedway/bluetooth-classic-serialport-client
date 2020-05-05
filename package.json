@@ -34,7 +34,7 @@
     "host": "https://bluetooth-classic-serialport-client.s3.amazonaws.com"
   },
   "scripts": {
-    "install": "./node_modules/.bin/node-pre-gyp install --fallback-to-build",
+    "install": "node-pre-gyp install --fallback-to-build",
     "test": "echo \"No test specified\""
   },
   "license": "MIT"
