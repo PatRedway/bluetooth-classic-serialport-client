@@ -9,7 +9,7 @@
     "linux",
     "windows"
   ],
-  "author": "Lalaina Rahobisoa <lalaina.rahobisoa@aet.fr>",
+  "author": "Lalaina Rahobisoa <lalaina.rahobisoa@gmail.com>",
   "homepage": "https://github.com/PatRedway/bluetooth-classic-serialport-client",
   "repository": {
     "type": "git",
@@ -23,18 +23,19 @@
     "win32"
   ],
   "dependencies": {
+    "aws-sdk": "^2.669.0",
     "nan": "2.14.1",
     "node-pre-gyp": "^0.14.0"
   },
   "binary": {
     "module_name": "bluetooth_classic_serialport_client",
     "module_path": "./lib/binding/",
-    "host": "https://bitbucket.org/aet64/std-039-smartvox-config/downloads",
-    "package_name": "{module_name}-v{version}-{node_abi}-{platform}-{arch}.tar.gz"
+    "package_name": "{module_name}-v{version}-{node_abi}-{platform}-{arch}.tar.gz",
+    "host": "https://bluetooth-classic-serialport-client.s3.amazonaws.com"
   },
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build",
-    "install-debug": "node-gyp configure build --debug"
+    "test": "echo \"No test specified\""
   },
   "license": "MIT"
 }

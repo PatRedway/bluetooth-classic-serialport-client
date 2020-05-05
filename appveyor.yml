@@ -1,4 +1,9 @@
 environment:
+  # Node-pre-gyp key to publish to S3 amazonaws 
+  node_pre_gyp_accessKeyId:
+    secure: WAHfHKrvPh/JvZHzXnjz0DRxQLOHnfZndqPr4j47spE=
+  node_pre_gyp_secretAccessKey:
+    secure: /BrCRWOuBZYBa8g5KQWm5H+yi54Tyzp/a+JJQ3yUGU11YxWaj60tLWkCjmNiO4ef
   # Visual Studio Version
   MSVS_VERSION: 2017
   # Test against these versions of Node.js and io.js
@@ -30,8 +35,4 @@ install:
 
 build_script:
   - npm install
-  - npm run install
-
-artifacts:
-  - path: 'build\Release\*.node'
-    name: BluetoothClassicSerialPortClient
+  - ./node_modules/.bin/node-pre-gyp package publish
