@@ -19,16 +19,13 @@ platform:
 
 install:
   - ps: Install-Product node $env:nodejs_version $env:Platform
-  - node --version
   - npm -g install npm@latest
   - if "%PLATFORM%" == "x64" SET PATH=C:\Python27-x64;%PATH%
   - if "%PLATFORM%" == "x86" SET PATH=C:\python27;%PATH%
-  
 
 build_script:
   - npm install --build-from-source
-  - ./node_modules/.bin/node-pre-gyp package
   - ps: >-
       if ($env:APPVEYOR_REPO_TAG -eq $true) {
-        ./node_modules/.bin/node-pre-gyp publish
+        ./node_modules/.bin/node-pre-gyp package publish
       }
