@@ -2,4 +2,3 @@
 node_modules
 /lib/binding
 .node_pre_gyprc
-package-lock.json
