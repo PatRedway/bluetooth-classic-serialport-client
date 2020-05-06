@@ -14,7 +14,7 @@ Currently using Nan as Native Addon (https://github.com/nodejs/nan). In the futu
 ### List paired bluetooth devices
 
 ``` javascript
-const serial = new BluetoothSerialPort()
+const serial = new BluetoothClassicSerialportClient()
 
 serial.listPairedDevices()
   .then((devices) => {
@@ -28,7 +28,7 @@ serial.listPairedDevices()
 ### Connect to bluetooth device
 
 ``` javascript
-const serial = new BluetoothSerialPort()
+const serial = new BluetoothClassicSerialportClient()
 
 let myBluetoothDevice
 

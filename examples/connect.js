@@ -3,8 +3,8 @@
  *  You can easily adapt this example to connect with your own device.
 */
 
-const BluetoothSerialPort = require('../index')
-const serial = new BluetoothSerialPort()
+const BluetoothClassicSerialportClient = require('../index')
+const serial = new BluetoothClassicSerialportClient()
 const PassThrough = require('stream').PassThrough
 const ReadLineParser = require('./lib/ReadLineParser')
 

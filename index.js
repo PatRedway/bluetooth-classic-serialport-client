@@ -7,7 +7,7 @@ const SerialPortBinding = binding.SerialPortBinding
 const DeviceScan = binding.DeviceScan
 const EventEmitter = require('events')
 
-class BluetoothSerialPort extends EventEmitter {
+class BluetoothClassicSerialportClient extends EventEmitter {
 
   constructor() {
     super()
@@ -128,4 +128,4 @@ class BluetoothSerialPort extends EventEmitter {
   }
 } 
 
-module.exports = BluetoothSerialPort
+module.exports = BluetoothClassicSerialportClient

@@ -1,5 +1,5 @@
-const BluetoothSerialPort = require('../index')
-const serial = new BluetoothSerialPort()
+const BluetoothClassicSerialportClient = require('../index')
+const serial = new BluetoothClassicSerialportClient()
 
 serial.listPairedDevices()
   .then((devices) => {
