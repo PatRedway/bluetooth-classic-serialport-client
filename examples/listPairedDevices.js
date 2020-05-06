@@ -1,10 +1,10 @@
 const BluetoothSerialPort = require('../index')
 const serial = new BluetoothSerialPort()
 
-serial.scan()
+serial.listPairedDevices()
   .then((devices) => {
-    console.log('[scan.js] Scanned devices', devices)
+    console.log('Paired devices', devices)
   })
   .catch((err) => {
-    console.log('[scan.js] Error', err)
+    console.log('Error', err)
   })

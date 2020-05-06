@@ -22,7 +22,7 @@ class BluetoothSerialPort extends EventEmitter {
     return this.connection !== undefined
   }
 
-  scan() {
+  listPairedDevices() {
     return new Promise((resolve, reject) => {
       this.deviceScan.inquire(
         (err, devices) => {

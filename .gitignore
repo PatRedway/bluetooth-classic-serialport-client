@@ -2,3 +2,4 @@
 node_modules
 /lib/binding
 .node_pre_gyprc
+.vscode

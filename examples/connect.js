@@ -17,7 +17,7 @@ parser.on('data', (data) => {
 
 let smartvox
 
-serial.scan()
+serial.listPairedDevices()
 .then((devices) => {
   devices.forEach(device => {
     console.log("[connect.js] Device", device)
