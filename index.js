@@ -26,7 +26,10 @@ class BluetoothSerialPort extends EventEmitter {
     return new Promise((resolve, reject) => {
       this.deviceScan.inquire(
         (err, devices) => {
-          if (err) reject(err) 
+          if (err) {
+            reject(err) 
+            return
+          }
           resolve(devices)
         }
       )

@@ -1,4 +1,7 @@
-skip_non_tags: true
+branches:
+  only:
+    - master
+    
 version: build-#{build}
 
 environment:

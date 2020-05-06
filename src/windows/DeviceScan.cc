@@ -19,9 +19,7 @@ using namespace node;
 using namespace v8;
 
 DeviceScan::DeviceScan() {
-    //
-    // Ask for Winsock version 2.2.
-    //
+    /* Ask for Winsock version 2.2 */
     WSADATA data;
     initialized = WSAStartup(MAKEWORD(2, 2), &data) == 0;
     initialized &= LOBYTE(data.wVersion) == 2;
@@ -74,10 +72,11 @@ public:
     ~InquireWorker() {}
 
     void Execute () {
-        // Construct windows socket bluetooth variables
-        DWORD flags = LUP_CONTAINERS | LUP_FLUSHCACHE | LUP_RETURN_NAME | LUP_RETURN_ADDR;
+
+        DWORD flags = LUP_CONTAINERS | LUP_RETURN_NAME | LUP_RETURN_ADDR;
         DWORD querySetSize = sizeof(WSAQUERYSET);
         WSAQUERYSET *querySet = (WSAQUERYSET *)malloc(querySetSize);
+
         if (querySet == nullptr) {
             SetErrorMessage("Out of memory: Unable to allocate memory resource for inquiry");
             return;
@@ -87,99 +86,118 @@ public:
         querySet->dwSize = querySetSize;
         querySet->dwNameSpace = NS_BTH;
 
-        // Initiate client device inquiry
         HANDLE lookupServiceHandle;
-        int lookupServiceError = WSALookupServiceBegin(querySet, flags, &lookupServiceHandle);
-        if (lookupServiceError != SOCKET_ERROR) {
-            // Iterate over each found bluetooth service
+
+        if (WSALookupServiceBegin(querySet, flags, &lookupServiceHandle) == SOCKET_ERROR) {
+
+            const char *errorMessage = (WSAGetLastError() == WSASERVICE_NOT_FOUND) 
+                                        ? "Bluetooth is not enabled" 
+                                        : "Unable to initiate client device inquiry";
+
+            SetErrorMessage(errorMessage);
+            free(querySet);
+            return;
+
+        } else {
+
+            bt_device * maxDeviceList = (bt_device*)malloc(MAX_DEVICES_COUNT * sizeof(bt_device));
             bool inquiryComplete = false;
-            int max_rsp = 255;
-            int num_rsp = 0;
-            
-            bt_device * max_bt_device_list = (bt_device*)malloc(max_rsp * sizeof(bt_device));
+            int deviceIndex = 0;
 
             while (!inquiryComplete) {
-                // For each bluetooth service retrieve its corresponding details
-                lookupServiceError = WSALookupServiceNext(lookupServiceHandle, flags, &querySetSize, querySet);
-                if (lookupServiceError != SOCKET_ERROR && (querySet->dwOutputFlags & BTHNS_RESULT_DEVICE_AUTHENTICATED )) {
+
+                if (WSALookupServiceNext(lookupServiceHandle, flags, &querySetSize, querySet) == SOCKET_ERROR) {
+
+                    int lookupServiceErrorNumber = WSAGetLastError();
+
+                    if (lookupServiceErrorNumber == WSAEFAULT) {
+
+                        free(querySet);
+
+                        querySet = (WSAQUERYSET *)malloc(querySetSize);
+
+                        if (querySet == nullptr) {
+
+                            WSALookupServiceEnd(lookupServiceHandle);
+                            SetErrorMessage("Out of memory: Unable to allocate memory resource for inquiry");
+                            return;
+                        }
+
+                    } else if (lookupServiceErrorNumber == WSA_E_NO_MORE) {
+
+                        inquiryComplete = true;
+
+                    } else {
+
+                        SetErrorMessage("Unhandled error");
+                        inquiryComplete = true;
+                    }
+
+                } else {
+
+                    strcpy(maxDeviceList[deviceIndex].name, querySet->lpszServiceInstanceName);
+                    maxDeviceList[deviceIndex].isConnected = (querySet->dwOutputFlags & BTHNS_RESULT_DEVICE_CONNECTED);
+                    maxDeviceList[deviceIndex].isRemembered = (querySet->dwOutputFlags & BTHNS_RESULT_DEVICE_REMEMBERED);
+                    maxDeviceList[deviceIndex].isAuthenticated = (querySet->dwOutputFlags & BTHNS_RESULT_DEVICE_AUTHENTICATED);
+
                     char address[40] = { 0 };
                     DWORD addressLength = _countof(address);
-                    SOCKADDR_BTH *bluetoothSocketAddress = (SOCKADDR_BTH *)querySet->lpcsaBuffer->RemoteAddr.lpSockaddr;
-                    BTH_ADDR bluetoothAddress = bluetoothSocketAddress->btAddr;
 
-                    // Emit the corresponding event if we were able to retrieve the address
-                    int addressToStringError = WSAAddressToString(querySet->lpcsaBuffer->RemoteAddr.lpSockaddr,
-                            sizeof(SOCKADDR_BTH),
-                            nullptr,
-                            address,
-                            &addressLength);
-                    if (addressToStringError != SOCKET_ERROR) {
-                        // Strip any leading and trailing parentheses is encountered
+                    int addressToStringError = WSAAddressToString(querySet->lpcsaBuffer->RemoteAddr.lpSockaddr, sizeof(SOCKADDR_BTH), nullptr, address, &addressLength);
+
+                    if (addressToStringError == NO_ERROR) {
+                        
                         char strippedAddress[19] = { 0 };
                         auto addressString = sscanf(address, "(" "%18[^)]" ")", strippedAddress) == 1
                             ? strippedAddress
                             : address;
 
-                        strcpy(max_bt_device_list[num_rsp].address, addressString);
-                        strcpy(max_bt_device_list[num_rsp].name, querySet->lpszServiceInstanceName);
-                        num_rsp++;
+                        strcpy(maxDeviceList[deviceIndex].address, addressString); 
                     }
-                } else {
-                    int lookupServiceErrorNumber = WSAGetLastError();
-                    if (lookupServiceErrorNumber == WSAEFAULT) {
-                        free(querySet);
-                        querySet = (WSAQUERYSET *)malloc(querySetSize);
-                        if (querySet == nullptr) {
-                            WSALookupServiceEnd(lookupServiceHandle);
-                            SetErrorMessage("Out of memory: Unable to allocate memory resource for inquiry");
-                            return;
-                        }
-                    } else if (lookupServiceErrorNumber == WSA_E_NO_MORE) {
-                        // No more services where found
-                        inquiryComplete = true;
-                    } else {
-                        // Unhandled error
-                        inquiryComplete = true;
-                    }
+
+                    deviceIndex++;
                 }
             }
-            inquiryResult.num_rsp = num_rsp;
-            inquiryResult.devices = (bt_device*)malloc(num_rsp * sizeof(bt_device));
 
-            for (int i = 0; i < num_rsp; i++) {
-                strcpy(inquiryResult.devices[i].address, max_bt_device_list[i].address);
-                strcpy(inquiryResult.devices[i].name, max_bt_device_list[i].name);
-            }
-            free(max_bt_device_list);
+            inquiryResult.deviceCount = deviceIndex;
+            inquiryResult.devices = (bt_device*)malloc(deviceIndex * sizeof(bt_device));
 
-        } else {
-            int lookupServiceErrorNumber = WSAGetLastError();
-            if (lookupServiceErrorNumber == WSASERVICE_NOT_FOUND) {
-                free(querySet);
-                SetErrorMessage("Bluetooth is not enabled");
-                return;
-            } else {
-                free(querySet);
-                SetErrorMessage("Unable to initiate client device inquiry");
-                return;
+            for (int deviceId = 0; deviceId < inquiryResult.deviceCount; deviceId++) {
+
+                strcpy(inquiryResult.devices[deviceId].address, maxDeviceList[deviceId].address);
+                strcpy(inquiryResult.devices[deviceId].name, maxDeviceList[deviceId].name);
+                inquiryResult.devices[deviceId].isConnected = maxDeviceList[deviceId].isConnected;
+                inquiryResult.devices[deviceId].isRemembered = maxDeviceList[deviceId].isRemembered;
+                inquiryResult.devices[deviceId].isAuthenticated = maxDeviceList[deviceId].isAuthenticated;
             }
+
+            free(maxDeviceList);
         }
-
+        
         free(querySet);
         WSALookupServiceEnd(lookupServiceHandle);
     }
 
     void HandleOKCallback () {
-        Local<Array> devicesArray = Nan::New<v8::Array>(inquiryResult.num_rsp);
-        for (int i = 0; i < inquiryResult.num_rsp; i++) {
-            Local<Object> deviceObject = Nan::New<v8::Object>();
-            Nan::Set(deviceObject, Nan::New("name").ToLocalChecked(), Nan::New(inquiryResult.devices[i].name).ToLocalChecked());
-            Nan::Set(deviceObject, Nan::New("address").ToLocalChecked(), Nan::New(inquiryResult.devices[i].address).ToLocalChecked());
+        
+        Nan::HandleScope scope;
 
-            Nan::Set(devicesArray, i, deviceObject);
+        Local<Array> devicesArray = Nan::New<v8::Array>(inquiryResult.deviceCount);
+
+        for (int deviceIndex = 0; deviceIndex < inquiryResult.deviceCount; deviceIndex++) {
+
+            Local<Object> deviceObject = Nan::New<v8::Object>();
+            Nan::Set(deviceObject, Nan::New("name").ToLocalChecked(), Nan::New(inquiryResult.devices[deviceIndex].name).ToLocalChecked());
+            Nan::Set(deviceObject, Nan::New("address").ToLocalChecked(), Nan::New(inquiryResult.devices[deviceIndex].address).ToLocalChecked());
+            Nan::Set(deviceObject, Nan::New("isConnected").ToLocalChecked(), Nan::New(inquiryResult.devices[deviceIndex].isConnected));
+            Nan::Set(deviceObject, Nan::New("isRemembered").ToLocalChecked(), Nan::New(inquiryResult.devices[deviceIndex].isRemembered));
+            Nan::Set(deviceObject, Nan::New("isAuthenticated").ToLocalChecked(), Nan::New(inquiryResult.devices[deviceIndex].isAuthenticated));
+
+            Nan::Set(devicesArray, deviceIndex, deviceObject);
         }
 
         const int argc = 2;
+
         Local<Value> argv[argc] = {
             Nan::Null(),
             devicesArray
@@ -189,8 +207,11 @@ public:
     }
 
     void HandleErrorCallback() {
+
         Nan::HandleScope scope;
+        
         const int argc = 1;
+
         Local<Value> argv[argc] = {
             Nan::New(ErrorMessage()).ToLocalChecked()
         };
@@ -240,7 +261,7 @@ NAN_METHOD(DeviceScan::SdpSearch) {
     baton->hasError = false;
     baton->request.data = baton;
     baton->cb = new Nan::Callback(cb);
-    baton->channelID = -1;
+    baton->channelId = -1;
 
     int status = uv_queue_work(uv_default_loop(), &baton->request, EIO_SdpSearch, (uv_after_work_cb)EIO_AfterSdpSearch);
     assert(status == 0);
@@ -251,7 +272,7 @@ NAN_METHOD(DeviceScan::SdpSearch) {
 void DeviceScan::EIO_SdpSearch(uv_work_t *req) {
 
     sdp_baton_t *baton = static_cast<sdp_baton_t *>(req->data);
-    baton->channelID = -1;
+    baton->channelId = -1;
 
     // Construct windows socket bluetooth variables
     DWORD flags = LUP_FLUSHCACHE | LUP_RETURN_ADDR;
@@ -282,7 +303,7 @@ void DeviceScan::EIO_SdpSearch(uv_work_t *req) {
             lookupServiceError = WSALookupServiceNext(lookupServiceHandle, flags, &querySetSize, querySet);
             if (lookupServiceError != SOCKET_ERROR) {
                 SOCKADDR_BTH *bluetoothSocketAddress = (SOCKADDR_BTH *)querySet->lpcsaBuffer->RemoteAddr.lpSockaddr;
-                baton->channelID = bluetoothSocketAddress->port;
+                baton->channelId = bluetoothSocketAddress->port;
                 inquiryComplete = true;
             } else {
                 int lookupServiceErrorNumber = WSAGetLastError();
@@ -313,7 +334,7 @@ void DeviceScan::EIO_SdpSearch(uv_work_t *req) {
         }
     }
     
-    if (baton->channelID < 0) {
+    if (baton->channelId < 0) {
         baton->hasError = true;
         baton->errorMessage = "Channel not found";
     }
@@ -333,7 +354,7 @@ void DeviceScan::EIO_AfterSdpSearch(uv_work_t *req) {
         argv[1] = Nan::Null();
     } else {
         argv[0] = Nan::Null();
-        argv[1] = Nan::New(baton->channelID);
+        argv[1] = Nan::New(baton->channelId);
     }
 
     Nan::Call(baton->cb->GetFunction(), Nan::GetCurrentContext()->Global(), argc, argv);

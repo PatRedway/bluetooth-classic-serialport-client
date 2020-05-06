@@ -5,15 +5,18 @@
 #include <uv.h>
 #include <nan.h>
 
+#define MAX_DEVICES_COUNT   255
+
 struct bt_device {
     char address[19];
     char name[248];
-    int channelId;
-    char channelName[248];
+    bool isConnected;
+    bool isRemembered;
+    bool isAuthenticated;
 };
 
 struct bt_inquiry {
-    int num_rsp;
+    int deviceCount;
     bt_device *devices;
 };
 
@@ -29,7 +32,7 @@ class DeviceScan : public Nan::ObjectWrap {
         struct sdp_baton_t {
             uv_work_t request;
             Nan::Callback* cb;
-            int channelID;
+            int channelId;
             char address[40];
             bool hasError;
             const char *errorMessage;
