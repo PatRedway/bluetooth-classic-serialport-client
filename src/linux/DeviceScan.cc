@@ -47,25 +47,17 @@ using namespace v8;
 void DeviceScan::Init(Local<Object> target) {
     Nan::HandleScope scope;
 
-    Local<FunctionTemplate> t = Nan::New<FunctionTemplate>(New);
+    Local<FunctionTemplate> functionTemplate = Nan::New<FunctionTemplate>(New);
 
-    t->InstanceTemplate()->SetInternalFieldCount(1);
-    t->SetClassName(Nan::New("DeviceScan").ToLocalChecked());
+    functionTemplate->InstanceTemplate()->SetInternalFieldCount(1);
+    functionTemplate->SetClassName(Nan::New("DeviceScan").ToLocalChecked());
 
     Isolate *isolate = target->GetIsolate();
-    Local<Context> ctx = isolate->GetCurrentContext();
+    Local<Context> context = isolate->GetCurrentContext();
 
-    Nan::SetPrototypeMethod(t, "inquire", Inquire);
-    Nan::SetPrototypeMethod(t, "sdpSearch", SdpSearch);
-    target->Set(ctx, Nan::New("DeviceScan").ToLocalChecked(), t->GetFunction(ctx).ToLocalChecked());
-}
-
-DeviceScan::DeviceScan() {
-
-}
-
-DeviceScan::~DeviceScan() {
-
+    Nan::SetPrototypeMethod(functionTemplate, "inquire", Inquire);
+    Nan::SetPrototypeMethod(functionTemplate, "sdpSearch", SdpSearch);
+    target->Set(context, Nan::New("DeviceScan").ToLocalChecked(), functionTemplate->GetFunction(context).ToLocalChecked());
 }
 
 NAN_METHOD(DeviceScan::New) {
@@ -80,116 +72,74 @@ NAN_METHOD(DeviceScan::New) {
     info.GetReturnValue().Set(info.This());
 }
 
-bt_inquiry DeviceScan::doInquire() {
-
-  // do the bluetooth magic
-  inquiry_info *ii = NULL;
-  int max_rsp, num_rsp;
-  int dev_id, sock, len, flags;
-  int i;
-  char addr[19] = { 0 };
-  char name[248] = { 0 };
-
-  bt_inquiry inquiryResult;
-
-  dev_id = hci_get_route(NULL);
-  sock = hci_open_dev( dev_id );
-  if (dev_id < 0 || sock < 0) {
-    Nan::ThrowError("opening socket");
-  }
-
-  len  = 8;
-  max_rsp = 255;
-  flags = IREQ_CACHE_FLUSH;
-  ii = (inquiry_info*)malloc(max_rsp * sizeof(inquiry_info));
-
-  num_rsp = hci_inquiry(dev_id, len, max_rsp, NULL, &ii, flags);
-  // if( num_rsp < 0 ) {
-  //     return ThrowException(Exception::Error(String::New("hci inquiry")));
-  // }
-  inquiryResult.num_rsp = num_rsp;
-  inquiryResult.devices = (bt_device*)malloc(num_rsp * sizeof(bt_device));
-
-  for (i = 0; i < num_rsp; i++) {
-    ba2str(&(ii+i)->bdaddr, addr);
-    memset(name, 0, sizeof(name));
-    if (hci_read_remote_name(sock, &(ii+i)->bdaddr, sizeof(name),
-        name, 0) < 0)
-      strcpy(name, addr);
-
-    //fprintf(stderr, "%s [%s]\n", addr, name);
-    strcpy(inquiryResult.devices[i].address, addr);
-    strcpy(inquiryResult.devices[i].name, name);
-  }
-
-  free( ii );
-  close( sock );
-  return inquiryResult;
-}
-
 class InquireWorker : public Nan::AsyncWorker {
  public:
   InquireWorker(Nan::Callback *callback) : Nan::AsyncWorker(callback) {}
   ~InquireWorker() {}
 
   void Execute () {
-    inquiry_info *ii = NULL;
-    int max_rsp, num_rsp;
-    int dev_id, sock, len, flags;
-    int i;
+    int firstAdaptator = hci_get_route(nullptr);                    // Passing nullptr argument will retrieve the id of first available device 
+    int sock = hci_open_dev(firstAdaptator);
+    if (firstAdaptator < 0 || sock < 0) {
+      SetErrorMessage("Bluetooth adaptator not found");
+      return;
+    }
+
+    struct hci_dev_info device_info;
+    if (hci_devinfo(firstAdaptator, &device_info) != 0) {
+      SetErrorMessage("Unable to get hci device info");
+      return;
+    }
+
+    char device_address[18];
+    ba2str(&device_info.bdaddr, device_address);
+    printf("Local Device: %s  %s\n", device_address, device_info.name);
+
+    int len                   = 20;                                   // Search time = 1.28 * len seconds
+    int flags                 = IREQ_CACHE_FLUSH;                     // Flush out the cache of previously detected devices.
+    inquiry_info *inquiryInfo = (inquiry_info*)malloc(MAX_DEVICES_COUNT * sizeof(inquiry_info));
+
+    int num_rsp = hci_inquiry(firstAdaptator, len, MAX_DEVICES_COUNT, NULL, &inquiryInfo, flags);
+    if (num_rsp < 0) {
+      SetErrorMessage("Unable to execute hci_inquiry");
+      return;
+    }
+
+    inquiryResult.num_rsp = num_rsp;
+    inquiryResult.devices = (bt_device*)malloc(num_rsp * sizeof(bt_device));
     char addr[19] = { 0 };
     char name[248] = { 0 };
 
-    dev_id = hci_get_route(NULL);
-    sock = hci_open_dev( dev_id );
-    if (dev_id < 0 || sock < 0) {
-      SetErrorMessage("error hci_open_dev");
-      return;
-    }
-
-    len  = 8;
-    max_rsp = 255;
-    flags = IREQ_CACHE_FLUSH;
-    ii = (inquiry_info*)malloc(max_rsp * sizeof(inquiry_info));
-
-    num_rsp = hci_inquiry(dev_id, len, max_rsp, NULL, &ii, flags);
-    if( num_rsp < 0 ) {
-      SetErrorMessage("error hci_inquiry");
-      return;
-    }
-    inquiryResult.num_rsp = num_rsp;
-    inquiryResult.devices = (bt_device*)malloc(num_rsp * sizeof(bt_device));
-
-    for (i = 0; i < num_rsp; i++) {
-      ba2str(&(ii+i)->bdaddr, addr);
+    for (int deviceIndex = 0; deviceIndex < num_rsp; deviceIndex++) {
+      ba2str(&(inquiryInfo+deviceIndex)->bdaddr, addr);
       memset(name, 0, sizeof(name));
-      if (hci_read_remote_name(sock, &(ii+i)->bdaddr, sizeof(name),
-          name, 0) < 0)
+      int returnCode = hci_read_remote_name(sock, &(inquiryInfo+deviceIndex)->bdaddr, sizeof(name),name, 0);
+      if (returnCode < 0) {
         strcpy(name, addr);
+      }
 
-      //fprintf(stderr, "%s [%s]\n", addr, name);
-      strcpy(inquiryResult.devices[i].address, addr);
-      strcpy(inquiryResult.devices[i].name, name);
+      strcpy(inquiryResult.devices[deviceIndex].address, addr);
+      strcpy(inquiryResult.devices[deviceIndex].name, name);
     }
 
-    free( ii );
-    close( sock );
+    free(inquiryInfo);
+    close(sock);
   }
 
   void HandleOKCallback () {
     Nan::HandleScope scope;
     Local<Array> devicesArray = Nan::New<v8::Array>(inquiryResult.num_rsp);
-    for (int i = 0; i < inquiryResult.num_rsp; i++) {
+    for (int deviceIndex = 0; deviceIndex < inquiryResult.num_rsp; deviceIndex++) {
         Local<Object> deviceObject = Nan::New<v8::Object>();
-        Nan::Set(deviceObject, Nan::New("name").ToLocalChecked(), Nan::New(inquiryResult.devices[i].name).ToLocalChecked());
-        Nan::Set(deviceObject, Nan::New("address").ToLocalChecked(), Nan::New(inquiryResult.devices[i].address).ToLocalChecked());
+        Nan::Set(deviceObject, Nan::New("name").ToLocalChecked(), Nan::New(inquiryResult.devices[deviceIndex].name).ToLocalChecked());
+        Nan::Set(deviceObject, Nan::New("address").ToLocalChecked(), Nan::New(inquiryResult.devices[deviceIndex].address).ToLocalChecked());
 
-        Nan::Set(devicesArray, i, deviceObject);
+        Nan::Set(devicesArray, deviceIndex, deviceObject);
     }
 
     Local<Value> argv[] = {
-        devicesArray,
-        Nan::Null()
+        Nan::Null(),
+        devicesArray
     };
 
     Nan::Call(callback->GetFunction(), Nan::GetCurrentContext()->Global(), 2, argv);
@@ -198,16 +148,14 @@ class InquireWorker : public Nan::AsyncWorker {
   void HandleErrorCallback () {
     Nan::HandleScope scope;
     Local<Value> argv[] = {
-        Nan::Null(),
-        Nan::New(ErrorMessage()).ToLocalChecked()
+        Nan::New(ErrorMessage()).ToLocalChecked(),
     };
 
-    Nan::Call(callback->GetFunction(), Nan::GetCurrentContext()->Global(), 2, argv);
+    Nan::Call(callback->GetFunction(), Nan::GetCurrentContext()->Global(), 1, argv);
   }
 
   private:
     bt_inquiry inquiryResult;
-    Nan::Callback* found;
 };
 
 NAN_METHOD(DeviceScan::Inquire) {
@@ -222,7 +170,7 @@ NAN_METHOD(DeviceScan::Inquire) {
 }
 
 NAN_METHOD(DeviceScan::SdpSearch) {
-    const char *usage = "usage: findSerialPortChannel(address, callback)";
+    const char *usage = "usage: sdpSearch(address, callback)";
     if (info.Length() != 2) {
         return Nan::ThrowError(usage);
     }
@@ -254,9 +202,8 @@ NAN_METHOD(DeviceScan::SdpSearch) {
 }
 
 void DeviceScan::EIO_SdpSearch(uv_work_t *req) {
-    sdp_baton_t *baton = static_cast<sdp_baton_t *>(req->data);
 
-    // default, no channel is found
+    sdp_baton_t *baton = static_cast<sdp_baton_t *>(req->data);
     baton->channelID = -1;
 
     uuid_t svc_uuid;
@@ -268,7 +215,6 @@ void DeviceScan::EIO_SdpSearch(uv_work_t *req) {
     str2ba(baton->address, &target);
 
     // connect to the SDP server running on the remote machine
-    // session = sdp_connect(BDADDR_ANY, &target, SDP_RETRY_IF_BUSY);
     session = sdp_connect(&source, &target, SDP_RETRY_IF_BUSY);
 
     if (!session) {
@@ -336,23 +282,15 @@ void DeviceScan::EIO_SdpSearch(uv_work_t *req) {
 
 void DeviceScan::EIO_AfterSdpSearch(uv_work_t *req) {
     Nan::HandleScope scope;
-
     sdp_baton_t *baton = static_cast<sdp_baton_t *>(req->data);
 
-    Nan::TryCatch try_catch;
+    const int argc = 1;
+    Local<Value> argv[argc];
+    argv[0] = Nan::New(baton->channelID);
 
-    Local<Value> argv[] = {
-        Nan::New(baton->channelID)
-    };
+    Nan::Call(baton->cb->GetFunction(), Nan::GetCurrentContext()->Global(), argc, argv);
 
-    baton->cb->Call(1, argv);
-
-    if (try_catch.HasCaught()) {
-        Nan::FatalException(try_catch);
-    }
-
-    baton->inquire->Unref();
     delete baton->cb;
     delete baton;
-    baton = NULL;
+    baton = nullptr;
 }

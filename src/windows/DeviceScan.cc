@@ -39,17 +39,17 @@ DeviceScan::~DeviceScan() {
 void DeviceScan::Init(Local<Object> target) {
     Nan::HandleScope scope;
 
-    Local<FunctionTemplate> t = Nan::New<FunctionTemplate>(New);
+    Local<FunctionTemplate> functionTemplate = Nan::New<FunctionTemplate>(New);
 
-    t->InstanceTemplate()->SetInternalFieldCount(1);
-    t->SetClassName(Nan::New("DeviceScan").ToLocalChecked());
+    functionTemplate->InstanceTemplate()->SetInternalFieldCount(1);
+    functionTemplate->SetClassName(Nan::New("DeviceScan").ToLocalChecked());
 
     Isolate *isolate = target->GetIsolate();
-    Local<Context> ctx = isolate->GetCurrentContext();
+    Local<Context> context = isolate->GetCurrentContext();
 
-    Nan::SetPrototypeMethod(t, "inquire", Inquire);
-    Nan::SetPrototypeMethod(t, "sdpSearch", SdpSearch);
-    target->Set(ctx, Nan::New("DeviceScan").ToLocalChecked(), t->GetFunction(ctx).ToLocalChecked());
+    Nan::SetPrototypeMethod(functionTemplate, "listPairedDevices", ListPairedDevices);
+    Nan::SetPrototypeMethod(functionTemplate, "sdpSearch", SdpSearch);
+    target->Set(context, Nan::New("DeviceScan").ToLocalChecked(), functionTemplate->GetFunction(context).ToLocalChecked());
 }
 
 NAN_METHOD(DeviceScan::New) {
@@ -66,10 +66,10 @@ NAN_METHOD(DeviceScan::New) {
     info.GetReturnValue().Set(info.This());
 }
 
-class InquireWorker : public Nan::AsyncWorker {
+class ListPairedDevicesWorker : public Nan::AsyncWorker {
 public:
-    InquireWorker(Nan::Callback *callback): Nan::AsyncWorker(callback) {}
-    ~InquireWorker() {}
+    ListPairedDevicesWorker(Nan::Callback *callback): Nan::AsyncWorker(callback) {}
+    ~ListPairedDevicesWorker() {}
 
     void Execute () {
 
@@ -223,15 +223,15 @@ private:
     bt_inquiry inquiryResult;
 };
 
-NAN_METHOD(DeviceScan::Inquire) {
-    const char *usage = "usage: inquire(callback)";
+NAN_METHOD(DeviceScan::ListPairedDevices) {
+    const char *usage = "usage: listPairedDevices(callback)";
     if (info.Length() != 1) {
         return Nan::ThrowError(usage);
     }
 
     Nan::Callback *callback = new Nan::Callback(info[0].As<Function>());
 
-    Nan::AsyncQueueWorker(new InquireWorker(callback));
+    Nan::AsyncQueueWorker(new ListPairedDevicesWorker(callback));
 }
 
 NAN_METHOD(DeviceScan::SdpSearch) {

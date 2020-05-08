@@ -5,6 +5,8 @@
 #include <uv.h>
 #include <nan.h>
 
+#define MAX_DEVICES_COUNT   255
+
 struct bt_device {
     char address[19];
     char name[248];
@@ -23,8 +25,6 @@ class DeviceScan : public Nan::ObjectWrap {
         static void EIO_SdpSearch(uv_work_t *req);
         static void EIO_AfterSdpSearch(uv_work_t *req);
 
-        static bt_inquiry doInquire();
-
     private:
         struct sdp_baton_t {
             DeviceScan *inquire;
@@ -33,9 +33,6 @@ class DeviceScan : public Nan::ObjectWrap {
             int channelID;
             char address[40];
         };
-
-        DeviceScan();
-        ~DeviceScan();
 
         static NAN_METHOD(New);
         static NAN_METHOD(ListPairedDevices);

@@ -42,7 +42,7 @@ class DeviceScan : public Nan::ObjectWrap {
         ~DeviceScan();
 
         static NAN_METHOD(New);
-        static NAN_METHOD(Inquire);
+        static NAN_METHOD(ListPairedDevices);
         static NAN_METHOD(SdpSearch);
 
         bool initialized;

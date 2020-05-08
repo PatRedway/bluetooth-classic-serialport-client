@@ -22,9 +22,27 @@ class BluetoothClassicSerialportClient extends EventEmitter {
     return this.connection !== undefined
   }
 
-  listPairedDevices() {
+  // Only on Linux
+  // Inquire will last at most 25.6 seconds (1.28 * 20)
+  // See DeviceScan::InquireWorker::Execute method for more details
+  scan() {
     return new Promise((resolve, reject) => {
       this.deviceScan.inquire(
+        (err, devices) => {
+          if (err) {
+            reject(err) 
+            return
+          }
+          resolve(devices)
+        }
+      )
+    })
+  }
+
+  // Only on Windows
+  listPairedDevices() {
+    return new Promise((resolve, reject) => {
+      this.deviceScan.listPairedDevices(
         (err, devices) => {
           if (err) {
             reject(err) 
