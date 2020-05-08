@@ -27,11 +27,12 @@ class DeviceScan : public Nan::ObjectWrap {
 
     private:
         struct sdp_baton_t {
-            DeviceScan *inquire;
             uv_work_t request;
             Nan::Callback* cb;
-            int channelID;
+            int channelId;
             char address[40];
+            bool hasError;
+            const char *errorMessage;
         };
 
         static NAN_METHOD(New);

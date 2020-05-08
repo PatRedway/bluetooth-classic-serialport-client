@@ -45,18 +45,18 @@ SerialPortBinding::~SerialPortBinding() {
 void SerialPortBinding::Init(Local<Object> target) {
     Nan::HandleScope scope;
 
-    Local<FunctionTemplate> t = Nan::New<FunctionTemplate>(New);
+    Local<FunctionTemplate> functionTemplate = Nan::New<FunctionTemplate>(New);
 
     Isolate *isolate = target->GetIsolate();
-    Local<Context> ctx = isolate->GetCurrentContext();
+    Local<Context> context = isolate->GetCurrentContext();
 
-    t->InstanceTemplate()->SetInternalFieldCount(1);
-    t->SetClassName(Nan::New("SerialPortBinding").ToLocalChecked());
+    functionTemplate->InstanceTemplate()->SetInternalFieldCount(1);
+    functionTemplate->SetClassName(Nan::New("SerialPortBinding").ToLocalChecked());
 
-    Nan::SetPrototypeMethod(t, "write", Write);
-    Nan::SetPrototypeMethod(t, "read", Read);
-    Nan::SetPrototypeMethod(t, "close", Close);
-    target->Set(ctx, Nan::New("SerialPortBinding").ToLocalChecked(), t->GetFunction(ctx).ToLocalChecked());
+    Nan::SetPrototypeMethod(functionTemplate, "write", Write);
+    Nan::SetPrototypeMethod(functionTemplate, "read", Read);
+    Nan::SetPrototypeMethod(functionTemplate, "close", Close);
+    target->Set(context, Nan::New("SerialPortBinding").ToLocalChecked(), functionTemplate->GetFunction(context).ToLocalChecked());
 }
 
 NAN_METHOD(SerialPortBinding::New) {
@@ -221,8 +221,6 @@ NAN_METHOD(SerialPortBinding::Write) {
     return;
 }
 
-
-
 void SerialPortBinding::EIO_Write(uv_work_t *req) {
     queued_write_t *queuedWrite = static_cast<queued_write_t*>(req->data);
     write_baton_t *baton = static_cast<write_baton_t*>(queuedWrite->baton);
@@ -230,7 +228,7 @@ void SerialPortBinding::EIO_Write(uv_work_t *req) {
     SerialPortBinding *rfcomm = baton->rfcomm;
     int bytesToSend = baton->bufferLength;
     int bytesSent = 0;
-    const char *chunk = NULL;
+    const char *chunk = nullptr;
     baton->result = 0;
 
     if (rfcomm->m_socket == INVALID_SOCKET) {

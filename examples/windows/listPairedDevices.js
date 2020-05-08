@@ -2,7 +2,7 @@
  *  ListPairedDevices method only on Windows
  */
 
-const BluetoothClassicSerialportClient = require('../index')
+const BluetoothClassicSerialportClient = require('../../index')
 const serial = new BluetoothClassicSerialportClient()
 
 console.log('Starting listPairedDevices')

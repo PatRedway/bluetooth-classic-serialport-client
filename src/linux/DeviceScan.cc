@@ -159,9 +159,8 @@ class InquireWorker : public Nan::AsyncWorker {
 };
 
 NAN_METHOD(DeviceScan::Inquire) {
-  const char *usage = "usage: inquire(callback)";
   if (info.Length() != 1) {
-      return Nan::ThrowError(usage);
+      return Nan::ThrowError("usage: inquire(callback)");
   }
 
   Nan::Callback *callback = new Nan::Callback(info[0].As<Function>());
@@ -170,41 +169,40 @@ NAN_METHOD(DeviceScan::Inquire) {
 }
 
 NAN_METHOD(DeviceScan::SdpSearch) {
-    const char *usage = "usage: sdpSearch(address, callback)";
-    if (info.Length() != 2) {
-        return Nan::ThrowError(usage);
-    }
+  if (info.Length() != 2) {
+    return Nan::ThrowError("usage: sdpSearch(address, callback)");
+  }
 
-    if (!info[0]->IsString()) {
-        return Nan::ThrowTypeError("First argument should be a string value");
-    }
-    String::Utf8Value address(info.GetIsolate(), info[0]);
+  if (!info[0]->IsString()) {
+    return Nan::ThrowTypeError("First argument should be a string value");
+  }
 
-    if(!info[1]->IsFunction()) {
-        return Nan::ThrowTypeError("Second argument must be a function");
-    }
+  if(!info[1]->IsFunction()) {
+    return Nan::ThrowTypeError("Second argument must be a function");
+  }
 
-    Local<Function> cb = info[1].As<Function>();
+  sdp_baton_t *baton = new sdp_baton_t();
+  Local<Function> cb = info[1].As<Function>();
+  String::Utf8Value address(info.GetIsolate(), info[0]);
 
-    DeviceScan* inquire = Nan::ObjectWrap::Unwrap<DeviceScan>(info.This());
+  DeviceScan* inquire = Nan::ObjectWrap::Unwrap<DeviceScan>(info.This());
 
-    sdp_baton_t *baton = new sdp_baton_t();
-    baton->inquire = inquire;
-    baton->cb = new Nan::Callback(cb);
-    strcpy(baton->address, *address);
-    baton->channelID = -1;
-    baton->request.data = baton;
-    baton->inquire->Ref();
+  baton->hasError = false;
+  strcpy(baton->address, *address);
+  baton->request.data = baton;
+  baton->cb = new Nan::Callback(cb);
+  baton->channelId = -1;
 
-    uv_queue_work(uv_default_loop(), &baton->request, EIO_SdpSearch, (uv_after_work_cb)EIO_AfterSdpSearch);
+  int status = uv_queue_work(uv_default_loop(), &baton->request, EIO_SdpSearch, (uv_after_work_cb)EIO_AfterSdpSearch);
+  assert(status == 0);
 
-    return;
+  return;
 }
 
 void DeviceScan::EIO_SdpSearch(uv_work_t *req) {
 
     sdp_baton_t *baton = static_cast<sdp_baton_t *>(req->data);
-    baton->channelID = -1;
+    baton->channelId = -1;
 
     uuid_t svc_uuid;
     bdaddr_t target;
@@ -214,11 +212,12 @@ void DeviceScan::EIO_SdpSearch(uv_work_t *req) {
 
     str2ba(baton->address, &target);
 
-    // connect to the SDP server running on the remote machine
     session = sdp_connect(&source, &target, SDP_RETRY_IF_BUSY);
 
     if (!session) {
-        return;
+      baton->hasError = true;
+      baton->errorMessage = "error sdp_connect";
+      return;
     }
 
     // specify the UUID of the application we're searching for
@@ -262,7 +261,7 @@ void DeviceScan::EIO_SdpSearch(uv_work_t *req) {
                                 break;
                             case SDP_UINT8:
                                 if( proto == RFCOMM_UUID ) {
-                                    baton->channelID = d->val.int8;
+                                    baton->channelId = d->val.int8;
                                     return; // stop if channel is found
                                 }
                                 break;
@@ -277,6 +276,11 @@ void DeviceScan::EIO_SdpSearch(uv_work_t *req) {
         sdp_record_free( rec );
     }
 
+    if (baton->channelId < 0) {
+      baton->hasError = true;
+      baton->errorMessage = "Channel not found";
+    }
+
     sdp_close(session);
 }
 
@@ -284,9 +288,15 @@ void DeviceScan::EIO_AfterSdpSearch(uv_work_t *req) {
     Nan::HandleScope scope;
     sdp_baton_t *baton = static_cast<sdp_baton_t *>(req->data);
 
-    const int argc = 1;
+    const int argc = 2;
     Local<Value> argv[argc];
-    argv[0] = Nan::New(baton->channelID);
+    if (baton->hasError) {
+        argv[0] = Nan::New(baton->errorMessage).ToLocalChecked();
+        argv[1] = Nan::Null();
+    } else {
+        argv[0] = Nan::Null();
+        argv[1] = Nan::New(baton->channelId);
+    }
 
     Nan::Call(baton->cb->GetFunction(), Nan::GetCurrentContext()->Global(), argc, argv);
 

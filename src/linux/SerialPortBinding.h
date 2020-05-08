@@ -20,10 +20,10 @@ class SerialPortBinding : public Nan::ObjectWrap {
             SerialPortBinding *rfcomm;
             uv_work_t request;
             Nan::Callback* cb;
-            Nan::Callback* ecb;
             char address[40];
-            int status;
-            int channelID;
+            int channelId;
+            bool hasError;
+            const char *errorMessage;
         };
 
         struct read_baton_t {
@@ -43,7 +43,8 @@ class SerialPortBinding : public Nan::ObjectWrap {
             Nan::Persistent<v8::Object> buffer;
             Nan::Callback* callback;
             size_t result;
-            char errorString[1024];
+            bool hasError;
+            const char *errorMessage;
         };
 
         struct queued_write_t {
@@ -52,11 +53,10 @@ class SerialPortBinding : public Nan::ObjectWrap {
             write_baton_t* baton;
         };
 
-        int s;
+        int m_socket;
         int rep[2];
 
         SerialPortBinding();
-        ~SerialPortBinding();
 
         static void EIO_Connect(uv_work_t *req);
         static void EIO_AfterConnect(uv_work_t *req);

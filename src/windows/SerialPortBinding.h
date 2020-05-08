@@ -48,7 +48,6 @@ class SerialPortBinding : public Nan::ObjectWrap {
             size_t result;
             bool hasError;
             const char *errorMessage;
-            char errorString[1024];
         };
 
         struct queued_write_t {

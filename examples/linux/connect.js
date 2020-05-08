@@ -3,10 +3,10 @@
  *  You can easily adapt this example to connect with your own device.
 */
 
-const BluetoothClassicSerialportClient = require('../index')
-const serial = new BluetoothClassicSerialportClient()
 const PassThrough = require('stream').PassThrough
-const ReadLineParser = require('./lib/ReadLineParser')
+const ReadLineParser = require('../lib/ReadlineParser')
+const BluetoothClassicSerialportClient = require('../../index')
+const serial = new BluetoothClassicSerialportClient()
 
 let stream = new PassThrough()
 let parser = new ReadLineParser('\r')
@@ -17,7 +17,7 @@ parser.on('data', (data) => {
 
 let smartvox
 
-serial.listPairedDevices()
+serial.scan()
 .then((devices) => {
   devices.forEach(device => {
     console.log("[connect.js] Device", device)
@@ -32,10 +32,14 @@ serial.listPairedDevices()
     return
   }
 
+  console.log('Tryin to connect', smartvox.address)
   serial.connect(smartvox.address)
   .then(() => {
     console.log('[connect.js] Connected')
-    serial.on('data', (data) => stream.push(data))
+    serial.on('data', (data) => {
+      console.log('data received', data)
+      stream.push(data)
+    })
     serial.write(Buffer.from('help\r', 'utf-8')).then(() => {
       setTimeout(() => {
         serial.close()
@@ -44,5 +48,5 @@ serial.listPairedDevices()
       }, 5000)
     })
   })
-  .catch(err => console.log(err))
+  .catch(err => console.log('Connection error', err))
 })
