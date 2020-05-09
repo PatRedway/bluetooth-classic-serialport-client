@@ -24,4 +24,5 @@ build_script:
   - ps: >-
       if ($env:APPVEYOR_REPO_TAG -eq $true) {
         ./node_modules/.bin/node-pre-gyp package publish
+        ./node_modules/.bin/node-pre-gyp package publish --runtime=electron --target=6.1.11
       }
