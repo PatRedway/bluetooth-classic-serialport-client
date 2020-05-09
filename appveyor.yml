@@ -25,22 +25,7 @@ install:
 
 build_script:
   - npm install --build-from-source
-  - ps: >
-      ./node_modules/.bin/node-pre-gyp package
-
-artifacts:
-  - path: 'build\stage\*.tar.gz'
-    name: bluetooth-classic-serialport-client
-
-deploy:
-  provider: S3
-  access_key_id: 
-    secure: WAHfHKrvPh/JvZHzXnjz0DRxQLOHnfZndqPr4j47spE=
-  secret_access_key: 
-    secure: /BrCRWOuBZYBa8g5KQWm5H+yi54Tyzp/a+JJQ3yUGU11YxWaj60tLWkCjmNiO4ef
-  bucket: bluetooth-classic-serialport-client
-  region: eu-west-3
-  folder: release
-  name: bluetooth-classic-serialport-client
-  set_public: true
-  remove_files: true
+  - ps: >-
+    if ($env:APPVEYOR_REPO_TAG -eq $true) {
+      ./node_modules/.bin/node-pre-gyp package publish
+    }

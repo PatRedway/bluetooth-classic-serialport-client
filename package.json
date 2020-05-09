@@ -23,9 +23,11 @@
     "win32"
   ],
   "dependencies": {
-    "aws-sdk": "^2.669.0",
     "nan": "2.14.1",
     "node-pre-gyp": "^0.14.0"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.669.0"
   },
   "binary": {
     "module_name": "bluetooth_classic_serialport_client",
