@@ -29,6 +29,7 @@ build_script:
 
 artifacts:
   - path: 'build\stage\*.tar.gz'
+    name: bluetooth-classic-serialport-client
 
 deploy:
   provider: S3
@@ -39,3 +40,6 @@ deploy:
   bucket: bluetooth-classic-serialport-client
   region: eu-west-3
   folder: release
+  name: bluetooth-classic-serialport-client
+  set_public: true
+  remove_files: true
