@@ -25,7 +25,8 @@ install:
 
 build_script:
   - npm install --build-from-source
-  - ps: ./node_modules/.bin/node-pre-gyp package
+  - ps: >
+      ./node_modules/.bin/node-pre-gyp package
 
 artifacts:
   - path: 'build\stage\*.tar.gz'
