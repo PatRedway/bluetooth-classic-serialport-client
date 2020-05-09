@@ -30,6 +30,9 @@ build_script:
         ./node_modules/.bin/node-pre-gyp package publish
       }
 
+artifacts:
+  - path: 'build\stage\*.tar.gz'
+
 deploy:
   provider: S3
   access_key_id: WAHfHKrvPh/JvZHzXnjz0DRxQLOHnfZndqPr4j47spE=
