@@ -32,8 +32,10 @@ artifacts:
 
 deploy:
   provider: S3
-  access_key_id: WAHfHKrvPh/JvZHzXnjz0DRxQLOHnfZndqPr4j47spE=
-  secret_access_key: /BrCRWOuBZYBa8g5KQWm5H+yi54Tyzp/a+JJQ3yUGU11YxWaj60tLWkCjmNiO4ef
+  access_key_id: 
+    secure: WAHfHKrvPh/JvZHzXnjz0DRxQLOHnfZndqPr4j47spE=
+  secret_access_key: 
+    secure: /BrCRWOuBZYBa8g5KQWm5H+yi54Tyzp/a+JJQ3yUGU11YxWaj60tLWkCjmNiO4ef
   bucket: bluetooth-classic-serialport-client
   region: eu-west-3
   folder: release
