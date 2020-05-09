@@ -22,13 +22,12 @@ install:
   - npm -g install npm@latest
   - if "%PLATFORM%" == "x64" SET PATH=C:\Python27-x64;%PATH%
   - if "%PLATFORM%" == "x86" SET PATH=C:\python27;%PATH%
-  - ps: >-
-      echo $env:APPVEYOR_REPO_TAG
-      echo $env:APPVEYOR_REPO_TAG_NAME
 
 build_script:
   - npm install --build-from-source
   - ps: >-
+      echo $env:APPVEYOR_REPO_TAG
       if ($env:APPVEYOR_REPO_TAG -eq $true) {
+        echo $env:APPVEYOR_REPO_TAG_NAME
         ./node_modules/.bin/node-pre-gyp package publish
       }
