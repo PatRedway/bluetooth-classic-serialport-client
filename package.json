@@ -1,6 +1,6 @@
 {
   "name": "bluetooth-classic-serialport-client",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "Bluetooth classic serial port client for Node.js",
   "keywords": [
     "bluetooth",
