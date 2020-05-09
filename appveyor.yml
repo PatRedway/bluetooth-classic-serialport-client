@@ -25,6 +25,7 @@ install:
 
 build_script:
   - npm install --build-from-source
+  - echo $env:APPVEYOR_REPO_TAG
   - ps: >-
       if ($env:APPVEYOR_REPO_TAG -eq $true) {
         ./node_modules/.bin/node-pre-gyp package publish
