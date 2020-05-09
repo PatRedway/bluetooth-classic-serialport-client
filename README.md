@@ -1,6 +1,6 @@
 # Bluetooth classic serial port client for Node.js
 
-[![Build status](https://ci.appveyor.com/api/projects/status/5pj8g6rh9ml9v52a?svg=true)](https://ci.appveyor.com/project/lrahobisoa/bluetooth-classic-serialport-client)
+[![Build status](https://ci.appveyor.com/api/projects/status/snf6wbvfi10y7d4c/branch/master?svg=true)](https://ci.appveyor.com/project/PatRedway/bluetooth-classic-serialport-client/branch/master)
 
 A small Node.js library to :
 * List bluetooth paired devices (Windows only)
