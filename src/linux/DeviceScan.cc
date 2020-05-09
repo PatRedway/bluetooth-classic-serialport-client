@@ -61,9 +61,9 @@ void DeviceScan::Init(Local<Object> target) {
 }
 
 NAN_METHOD(DeviceScan::New) {
-    const char *usage = "usage: DeviceScan()";
+
     if (info.Length() != 0) {
-        return Nan::ThrowError(usage);
+        return Nan::ThrowError("usage: DeviceScan()");
     }
 
     DeviceScan* inquire = new DeviceScan();
@@ -73,11 +73,13 @@ NAN_METHOD(DeviceScan::New) {
 }
 
 class InquireWorker : public Nan::AsyncWorker {
+
  public:
   InquireWorker(Nan::Callback *callback) : Nan::AsyncWorker(callback) {}
   ~InquireWorker() {}
 
   void Execute () {
+
     int firstAdaptator = hci_get_route(nullptr);                    // Passing nullptr argument will retrieve the id of first available device 
     int sock = hci_open_dev(firstAdaptator);
     if (firstAdaptator < 0 || sock < 0) {
@@ -93,10 +95,9 @@ class InquireWorker : public Nan::AsyncWorker {
 
     char device_address[18];
     ba2str(&device_info.bdaddr, device_address);
-    printf("Local Device: %s  %s\n", device_address, device_info.name);
 
-    int len                   = 20;                                   // Search time = 1.28 * len seconds
-    int flags                 = IREQ_CACHE_FLUSH;                     // Flush out the cache of previously detected devices.
+    int len = 20;                                   // Search time = 1.28 * len seconds
+    int flags = IREQ_CACHE_FLUSH;                   // Flush out the cache of previously detected devices.
     inquiry_info *inquiryInfo = (inquiry_info*)malloc(MAX_DEVICES_COUNT * sizeof(inquiry_info));
 
     int num_rsp = hci_inquiry(firstAdaptator, len, MAX_DEVICES_COUNT, NULL, &inquiryInfo, flags);
@@ -127,9 +128,12 @@ class InquireWorker : public Nan::AsyncWorker {
   }
 
   void HandleOKCallback () {
+
     Nan::HandleScope scope;
     Local<Array> devicesArray = Nan::New<v8::Array>(inquiryResult.num_rsp);
+
     for (int deviceIndex = 0; deviceIndex < inquiryResult.num_rsp; deviceIndex++) {
+
         Local<Object> deviceObject = Nan::New<v8::Object>();
         Nan::Set(deviceObject, Nan::New("name").ToLocalChecked(), Nan::New(inquiryResult.devices[deviceIndex].name).ToLocalChecked());
         Nan::Set(deviceObject, Nan::New("address").ToLocalChecked(), Nan::New(inquiryResult.devices[deviceIndex].address).ToLocalChecked());
@@ -137,21 +141,23 @@ class InquireWorker : public Nan::AsyncWorker {
         Nan::Set(devicesArray, deviceIndex, deviceObject);
     }
 
-    Local<Value> argv[] = {
-        Nan::Null(),
-        devicesArray
-    };
+    const int argc = 2;
+    Local<Value> argv[argc];
+    argv[0] = Nan::Null();
+    argv[1] = devicesArray;
 
-    Nan::Call(callback->GetFunction(), Nan::GetCurrentContext()->Global(), 2, argv);
+    Nan::Call(callback->GetFunction(), Nan::GetCurrentContext()->Global(), argc, argv);
   }
 
   void HandleErrorCallback () {
-    Nan::HandleScope scope;
-    Local<Value> argv[] = {
-        Nan::New(ErrorMessage()).ToLocalChecked(),
-    };
 
-    Nan::Call(callback->GetFunction(), Nan::GetCurrentContext()->Global(), 1, argv);
+    Nan::HandleScope scope;
+
+    const int argc = 1;
+    Local<Value> argv[argc];
+    argv[0] = Nan::New(ErrorMessage()).ToLocalChecked();
+
+    Nan::Call(callback->GetFunction(), Nan::GetCurrentContext()->Global(), argc, argv);
   }
 
   private:
@@ -159,6 +165,7 @@ class InquireWorker : public Nan::AsyncWorker {
 };
 
 NAN_METHOD(DeviceScan::Inquire) {
+
   if (info.Length() != 1) {
       return Nan::ThrowError("usage: inquire(callback)");
   }
@@ -169,6 +176,7 @@ NAN_METHOD(DeviceScan::Inquire) {
 }
 
 NAN_METHOD(DeviceScan::SdpSearch) {
+
   if (info.Length() != 2) {
     return Nan::ThrowError("usage: sdpSearch(address, callback)");
   }
@@ -277,6 +285,7 @@ void DeviceScan::EIO_SdpSearch(uv_work_t *req) {
     }
 
     if (baton->channelId < 0) {
+
       baton->hasError = true;
       baton->errorMessage = "Channel not found";
     }

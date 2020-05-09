@@ -241,10 +241,14 @@ void SerialPortBinding::EIO_AfterWrite(uv_work_t *req) {
 
     const int argc = 2;
     Local<Value> argv[argc];
+
     if (baton->hasError) {
+
         argv[0] = Nan::New(baton->errorMessage).ToLocalChecked();
         argv[1] = Nan::Null();
+
     } else {
+
         argv[0] = Nan::Null();
         argv[1] = Nan::New<v8::Integer>((int32_t)baton->result);
     }
@@ -255,11 +259,13 @@ void SerialPortBinding::EIO_AfterWrite(uv_work_t *req) {
     ngx_queue_remove(&queuedWrite->queue);
 
     if (!ngx_queue_empty(&write_queue)) {
+
         // Always pull the next work item from the head of the queue
         ngx_queue_t* head = ngx_queue_head(&write_queue);
         queued_write_t* nextQueuedWrite = ngx_queue_data(head, queued_write_t, queue);
         uv_queue_work(uv_default_loop(), &nextQueuedWrite->req, EIO_Write, (uv_after_work_cb)EIO_AfterWrite);
     }
+
     uv_mutex_unlock(&write_queue_mutex);
 
     baton->buffer.Reset();
@@ -270,6 +276,7 @@ void SerialPortBinding::EIO_AfterWrite(uv_work_t *req) {
 }
 
 NAN_METHOD(SerialPortBinding::Read) {
+
   if (info.Length() != 1) {
     return Nan::ThrowError("usage: read(callback)");
   }
@@ -300,6 +307,7 @@ NAN_METHOD(SerialPortBinding::Read) {
 }
 
 void SerialPortBinding::EIO_Read(uv_work_t *req) {
+
     unsigned char buffer[BUFFER_LENGTH]= { 0 };
 
     read_baton_t *baton = static_cast<read_baton_t *>(req->data);
@@ -385,13 +393,23 @@ NAN_METHOD(SerialPortBinding::Close) {
   SerialPortBinding* rfcomm = Nan::ObjectWrap::Unwrap<SerialPortBinding>(info.This());
 
   if (rfcomm->m_socket == 0) {
+
     argv[0] = Nan::New("error socket closed").ToLocalChecked();
     Nan::Call(errorCallback->GetFunction(), Nan::GetCurrentContext()->Global(), argc, argv);
+
   } else {
+
     shutdown(rfcomm->m_socket, SHUT_RDWR);
     close(rfcomm->m_socket);
+    
     int rc = write(rfcomm->rep[1], "close", (strlen("close")+1));
-    printf("write close rc = %i\n", rc);
+
+    if (rc < 0) {
+      argv[0] = Nan::New("error write close").ToLocalChecked();
+      Nan::Call(errorCallback->GetFunction(), Nan::GetCurrentContext()->Global(), argc, argv);
+      return;
+    }
+
     rfcomm->m_socket = 0;
   }
 
