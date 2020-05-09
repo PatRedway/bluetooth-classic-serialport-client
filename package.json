@@ -32,7 +32,7 @@
   "binary": {
     "module_name": "bluetooth_classic_serialport_client",
     "module_path": "./lib/binding/",
-    "remote_path": "./{module_name}/v{version}",
+    "remote_path": "./v{version}",
     "package_name": "{node_abi}-{platform}-{arch}.tar.gz",
     "host": "https://bluetooth-classic-serialport-client.s3.amazonaws.com"
   },

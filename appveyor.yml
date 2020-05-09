@@ -2,9 +2,9 @@ version: 1.0.{build}-{branch}
 
 environment:
   node_pre_gyp_accessKeyId:
-    secure: WAHfHKrvPh/JvZHzXnjz0DRxQLOHnfZndqPr4j47spE=
+    secure: 16Eo3l/wwnBjEivjO/OKmxapS2RsTEw9qPxeEvMkz80=
   node_pre_gyp_secretAccessKey:
-    secure: /BrCRWOuBZYBa8g5KQWm5H+yi54Tyzp/a+JJQ3yUGU11YxWaj60tLWkCjmNiO4ef
+    secure: xqZMpQTZABBaxk5dSIKbMpO1rcLbEO7zD6uN0scnFAkDxv+pAKzX0xi+eKHgyYdY
   MSVS_VERSION: 2017
   matrix:
     - nodejs_version: "12"
@@ -22,8 +22,6 @@ install:
 build_script:
   - npm install --build-from-source
   - ps: >-
-      echo $env:APPVEYOR_REPO_TAG
       if ($env:APPVEYOR_REPO_TAG -eq $true) {
-        echo $env:APPVEYOR_REPO_TAG_NAME
         ./node_modules/.bin/node-pre-gyp package publish
       }
