@@ -25,10 +25,7 @@ install:
 
 build_script:
   - npm install --build-from-source
-  - ps: >-
-      if ($env:APPVEYOR_REPO_TAG -eq $true) {
-        ./node_modules/.bin/node-pre-gyp package publish
-      }
+  - ps: ./node_modules/.bin/node-pre-gyp package
 
 artifacts:
   - path: 'build\stage\*.tar.gz'
