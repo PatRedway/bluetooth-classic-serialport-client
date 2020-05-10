@@ -8,7 +8,11 @@ A small Node.js library to :
 * Connect/Disconnect to Bluetooth device using RFCOMM
 * Read/Write data
 
-Currently using Nan as Native Addon (https://github.com/nodejs/nan). In the future, I will migrate to NAPI.
+Currently using Nan as Native Addon (https://github.com/nodejs/nan).
+
+Binaries are available for :
+* Windows (32 and 64 bits)
+* Linux (64 bits)
 
 ## Basic examples
 
@@ -89,21 +93,3 @@ serial.close()
   .then(() => console.log('Connection successfully closed'))
   .catch((err) => console.log('Error', err))
 ```
-
-## Roadmap
-
-- MacOS version is deprecated. Don't use it
-- Node Addons : NAN --> NAPI
-
-## Prerequisites 
-
-### Linux
-
-* Needs Bluetooth development packages to build
-
-`apt-get install build-essential libbluetooth-dev`
-
-### Windows
-
-* Needs Visual Studio (Visual C++) and its command line tools installed.
-* Needs Python 2.x installed and accessible from the command line path.
