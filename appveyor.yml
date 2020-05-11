@@ -20,5 +20,8 @@ install:
 build_script:
   - npm install
   - ps: >-
-      ./node_modules/.bin/prebuild --runtime=electron --target=6.1.11 -u $env:GITHUB_TOKEN
-    
+      if ($env:APPVEYOR_REPO_TAG -eq $true) {
+        ./node_modules/.bin/prebuild
+        ./node_modules/.bin/prebuild --runtime=electron --target=6.1.11
+        ./node_modules/.bin/prebuild --upload-all $env:GITHUB_TOKEN
+      }
