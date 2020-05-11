@@ -1,6 +1,8 @@
 version: 1.0.{build}-{branch}
 
 environment:
+  GITHUB_TOKEN:
+    secure: nUd8Non85wvAfm3rkE7v1IzYU624x+7s0BCFtG1T6C+ykqhiZPKT6uW5AdeNxMHW
   MSVS_VERSION: 2017
   matrix:
     - nodejs_version: "12"
@@ -17,3 +19,6 @@ install:
 
 build_script:
   - npm install
+  - ps: >-
+      ./node_modules/.bin/prebuild --runtime=electron --target=6.1.11 -u $env:GITHUB_TOKEN
+    

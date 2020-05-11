@@ -1,6 +1,7 @@
 {
   "name": "bluetooth-classic-serialport-client",
   "version": "0.1.15",
+  "license": "MIT",
   "description": "Bluetooth classic serial port client for Node.js",
   "keywords": [
     "bluetooth",
@@ -16,19 +17,21 @@
     "url": "https://github.com/PatRedway/bluetooth-classic-serialport-client"
   },
   "gypfile": true,
+  "scripts": {
+    "install": "prebuild-install || node-gyp rebuild",
+    "test": "echo \"No test specified\""
+  },
   "main": "./index.js",
   "os": [
     "linux",
     "win32"
   ],
   "dependencies": {
+    "bindings": "^1.5.0",
     "nan": "2.14.1",
-    "prebuild-install": "^5.3.3",
-    "upload": "^0.1.3"
+    "prebuild-install": "^5.3.3"
   },
-  "scripts": {
-    "install": "prebuild-install || node-gyp rebuild",
-    "test": "echo \"No test specified\""
-  },
-  "license": "MIT"
+  "devDependencies": {
+    "prebuild": "^10.0.0"
+  }
 }

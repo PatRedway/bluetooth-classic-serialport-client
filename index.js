@@ -1,8 +1,4 @@
-const binary = require('node-pre-gyp')
-const path = require('path')
-const binding_path = binary.find(path.resolve(path.join(__dirname,'./package.json')))
-const binding = require(binding_path)
-
+const binding = require('bindings')('bluetooth-classic-serialport-client')
 const SerialPortBinding = binding.SerialPortBinding
 const DeviceScan = binding.DeviceScan
 const EventEmitter = require('events')

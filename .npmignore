@@ -1,0 +1,9 @@
+.travis.yml
+appveyor.yml
+
+node_modules/
+build/
+prebuilds/
+
+yarn.lock
+package-lock.json
