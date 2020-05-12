@@ -1,0 +1,15 @@
+language: node_js
+node_js:
+  - "12"
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - libbluetooth-dev
+
+before_install:
+  - npm -g install npm@latest
+
+script:
+  - npm install
