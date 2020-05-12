@@ -2,6 +2,8 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/snf6wbvfi10y7d4c/branch/master?svg=true)](https://ci.appveyor.com/project/PatRedway/bluetooth-classic-serialport-client/branch/master)
 
+[![Build Status](https://travis-ci.org/PatRedway/bluetooth-classic-serialport-client.svg?branch=master)](https://travis-ci.org/PatRedway/bluetooth-classic-serialport-client)
+
 A small Node.js library to :
 * List bluetooth paired devices (Windows only)
 * Scan nearby bluetooth devices (Linux only)
