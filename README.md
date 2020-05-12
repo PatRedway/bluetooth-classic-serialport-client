@@ -1,7 +1,6 @@
 # Bluetooth classic serial port client for Node.js
 
 [![Build status](https://ci.appveyor.com/api/projects/status/snf6wbvfi10y7d4c/branch/master?svg=true)](https://ci.appveyor.com/project/PatRedway/bluetooth-classic-serialport-client/branch/master)
-
 [![Build Status](https://travis-ci.org/PatRedway/bluetooth-classic-serialport-client.svg?branch=master)](https://travis-ci.org/PatRedway/bluetooth-classic-serialport-client)
 
 A small Node.js library to :
@@ -12,7 +11,7 @@ A small Node.js library to :
 
 Currently using Nan as Native Addon (https://github.com/nodejs/nan).
 
-Binaries are available for :
+Binaries are available [here](https://github.com/PatRedway/bluetooth-classic-serialport-client/releases)
 * Windows (32 and 64 bits)
 * Linux (64 bits)
 
