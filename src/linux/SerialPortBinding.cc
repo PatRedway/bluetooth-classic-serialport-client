@@ -53,11 +53,14 @@ void SerialPortBinding::Init(Local<Object> target) {
 
   functionTemplate->InstanceTemplate()->SetInternalFieldCount(1);
   functionTemplate->SetClassName(Nan::New("SerialPortBinding").ToLocalChecked());
+  
 
   Nan::SetPrototypeMethod(functionTemplate, "write", Write);
   Nan::SetPrototypeMethod(functionTemplate, "read", Read);
   Nan::SetPrototypeMethod(functionTemplate, "close", Close);
-  target->Set(Nan::New("SerialPortBinding").ToLocalChecked(), functionTemplate->GetFunction(context).ToLocalChecked());
+  target->Set(context, 
+              Nan::New("SerialPortBinding").ToLocalChecked(),
+              functionTemplate->GetFunction(context).ToLocalChecked());
 }
 
 NAN_METHOD(SerialPortBinding::New) {
@@ -350,12 +353,8 @@ void SerialPortBinding::EIO_AfterRead(uv_work_t *req) {
     argv[0] = Nan::New("Error reading from connection").ToLocalChecked();
     argv[1] = Nan::Null();
   } else {
-    Local<Object> globalObj = Nan::GetCurrentContext()->Global();
-    Local<Function> bufferConstructor = Local<Function>::Cast(globalObj->Get(Nan::New("Buffer").ToLocalChecked()));
-    Local<Value> constructorArgs[1] = { Nan::New<v8::Integer>(baton->size) };
-    Local<Object> resultBuffer = Nan::NewInstance(bufferConstructor, 1, constructorArgs).ToLocalChecked();
 
-    memcpy(Buffer::Data(resultBuffer), baton->result, baton->size);
+    v8::Local<v8::Value> resultBuffer = Nan::CopyBuffer((char *)baton->result, baton->size).ToLocalChecked();
 
     argv[0] = Nan::Null();
     argv[1] = resultBuffer;
