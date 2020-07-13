@@ -10,7 +10,10 @@ addons:
 script:
 - npm install
 - ./node_modules/.bin/prebuild
-- ./node_modules/.bin/prebuild --runtime=electron --target=6.1.11
+- ./node_modules/.bin/prebuild --runtime=electron --target=6.1.12
+- ./node_modules/.bin/prebuild --runtime=electron --target=7.3.2
+- ./node_modules/.bin/prebuild --runtime=electron --target=8.4.0
+- ./node_modules/.bin/prebuild --runtime=electron --target=9.1.0
 
 deploy:
   provider: releases
