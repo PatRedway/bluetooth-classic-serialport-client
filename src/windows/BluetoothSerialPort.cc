@@ -9,4 +9,4 @@ void InitAll(Local<Object> exports) {
     SerialPortBinding::Init(exports);
 }
 
-NODE_MODULE(BluetoothSerialPort, InitAll)
+NAN_MODULE_WORKER_ENABLED(BluetoothSerialPort, InitAll)

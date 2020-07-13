@@ -57,7 +57,10 @@ void DeviceScan::Init(Local<Object> target) {
 
     Nan::SetPrototypeMethod(functionTemplate, "inquire", Inquire);
     Nan::SetPrototypeMethod(functionTemplate, "sdpSearch", SdpSearch);
-    target->Set(context, Nan::New("DeviceScan").ToLocalChecked(), functionTemplate->GetFunction(context).ToLocalChecked());
+    
+    target->Set(context, 
+                Nan::New("DeviceScan").ToLocalChecked(),
+                functionTemplate->GetFunction(context).ToLocalChecked());
 }
 
 NAN_METHOD(DeviceScan::New) {

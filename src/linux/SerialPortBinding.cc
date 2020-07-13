@@ -54,7 +54,6 @@ void SerialPortBinding::Init(Local<Object> target) {
   functionTemplate->InstanceTemplate()->SetInternalFieldCount(1);
   functionTemplate->SetClassName(Nan::New("SerialPortBinding").ToLocalChecked());
   
-
   Nan::SetPrototypeMethod(functionTemplate, "write", Write);
   Nan::SetPrototypeMethod(functionTemplate, "read", Read);
   Nan::SetPrototypeMethod(functionTemplate, "close", Close);
