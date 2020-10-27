@@ -6,6 +6,7 @@ environment:
   MSVS_VERSION: 2017
   matrix:
     - nodejs_version: "12"
+    - nodejs_version: "14"
 
 platform:
   - x64
