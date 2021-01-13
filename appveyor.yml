@@ -26,5 +26,7 @@ build_script:
         ./node_modules/.bin/prebuild --runtime=electron --target=6.1.12
         ./node_modules/.bin/prebuild --runtime=electron --target=7.3.2
         ./node_modules/.bin/prebuild --runtime=electron --target=8.4.0
+        ./node_modules/.bin/prebuild --runtime=electron --target=9.4.0
+        ./node_modules/.bin/prebuild --runtime=electron --target=10.2.0
         ./node_modules/.bin/prebuild --upload-all $env:GITHUB_TOKEN
       }
