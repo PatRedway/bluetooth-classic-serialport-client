@@ -2,7 +2,6 @@ language: node_js
 os: linux
 dist: xenial
 node_js:
-- '12'
 - '14'
 addons:
   apt:
@@ -14,10 +13,11 @@ script:
 - npm install
 - ./node_modules/.bin/prebuild
 - ./node_modules/.bin/prebuild --runtime=electron --target=6.1.12
-- ./node_modules/.bin/prebuild --runtime=electron --target=7.3.2
-- ./node_modules/.bin/prebuild --runtime=electron --target=8.4.0
+- ./node_modules/.bin/prebuild --runtime=electron --target=7.3.3
+- ./node_modules/.bin/prebuild --runtime=electron --target=8.5.5
 - ./node_modules/.bin/prebuild --runtime=electron --target=9.4.0
 - ./node_modules/.bin/prebuild --runtime=electron --target=10.2.0
+- ./node_modules/.bin/prebuild --runtime=electron --target=11.2.0
 
 deploy:
   provider: releases
