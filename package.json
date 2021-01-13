@@ -28,10 +28,10 @@
   ],
   "dependencies": {
     "bindings": "^1.5.0",
-    "nan": "2.14.1",
-    "prebuild-install": "^5.3.3"
+    "nan": "2.14.2",
+    "prebuild-install": "^6.0.0"
   },
   "devDependencies": {
-    "prebuild": "^10.0.0"
+    "prebuild": "^10.0.1"
   }
 }
